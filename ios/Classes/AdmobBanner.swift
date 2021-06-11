@@ -103,7 +103,7 @@ class AdmobBanner : NSObject, FlutterPlatformView {
                 return kGADAdSizeLeaderboard
             case "SMART_BANNER":
                 // TODO: Do we need Landscape too?
-                return kGADAdSizeSmartBannerPortrait
+                return GADPortraitAnchoredAdaptiveBannerAdSizeWithWidth(frame.width)
             case "ADAPTIVE_BANNER":
                 return GADCurrentOrientationAnchoredAdaptiveBannerAdSizeWithWidth(frame.width)
             default:
@@ -119,20 +119,21 @@ class AdmobBanner : NSObject, FlutterPlatformView {
 }
 
 extension AdmobBanner : GADBannerViewDelegate {
-    func adViewDidReceiveAd(_ bannerView: GADBannerView) {
+    
+    func bannerViewDidReceiveAd(_ bannerView: GADBannerView) {
         channel.invokeMethod("loaded", arguments: nil)
     }
     
-    func adView(_ bannerView: GADBannerView, didFailToReceiveAdWithError error: GADRequestError) {
+    func bannerView(_ bannerView: GADBannerView, didFailToReceiveAdWithError error: Error) {
         channel.invokeMethod("failedToLoad", arguments: [
-            "errorCode": error.code,
+            "errorCode": (error as NSError).code,
             "error": error.localizedDescription
         ])
     }
     
     /// Tells the delegate that a full screen view will be presented in response to the user clicking on
     /// an ad. The delegate may want to pause animations and time sensitive interactions.
-    func adViewWillPresentScreen(_ bannerView: GADBannerView) {
+    func bannerViewWillPresentScreen(_ bannerView: GADBannerView) {
         channel.invokeMethod("clicked", arguments: nil)
         channel.invokeMethod("opened", arguments: nil)
     }
@@ -140,11 +141,11 @@ extension AdmobBanner : GADBannerViewDelegate {
     // TODO: not sure this exists on iOS.
     // channel.invokeMethod("impression", null)
     
-    func adViewWillLeaveApplication(_ bannerView: GADBannerView) {
-        channel.invokeMethod("leftApplication", arguments: nil)
-    }
+//    func adViewWillLeaveApplication(_ bannerView: GADBannerView) {
+//        channel.invokeMethod("leftApplication", arguments: nil)
+//    }
     
-    func adViewDidDismissScreen(_ bannerView: GADBannerView) {
+    func bannerViewDidDismissScreen(_ bannerView: GADBannerView) {
         channel.invokeMethod("closed", arguments: nil)
     }
 }
